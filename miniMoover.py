@@ -12,12 +12,6 @@ from shelve import open
 
 campi_insert = ["DITTA","DEPOSITO","CODMACCHINA","STAZIONE","NUMREG","PROGRIGA","CODARTICOLO","VARIANTE","STARTDATE","ENDDATE","QTAORDINE","TEMPO","TEMPOPEZZO","CONTAPEZZI","CODFASE","CODREPARTO","CODOPERATORE","STATOMACCHINA","DATACONSOLIDAMENTO"]
 
-def save_var(name_key:str, var):
-    with open("test-shelf", flag = 'c', protocol=None, writeback = False) as shelf:
-        shelf[name_key] = var
-        print("Salvato.")
-        return
-
 def flat_to_dict(lst:list):
     """
     Crea una lista 2D da una multilivello.
@@ -44,7 +38,6 @@ def print_log(messaggio:str,end="\n", rewritable:bool=False, clear:bool=True):
     if clear : print(CLEAN_LINE,end="\r")
     if rewritable:
         print(msg, end="\r")
-        return
     elif not rewritable and bool(end):
         print(msg, end=end)
 
@@ -283,7 +276,6 @@ print_log(f"{Back.GREEN} COMPLETATO {Style.RESET_ALL}")
 tmp_old_len_lista_articoli = len(lista_ordini)
 tmp_lista_ordini = []
 
-# TODO Lavori in corso
 # -- Riordinamento cronologico 
 print_log("Riordinamento delle righe in ordine cronologico...")
 df_righe = pd.DataFrame(lista_ordini)
