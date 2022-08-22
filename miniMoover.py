@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from random import randrange
 import sys
 import pandas as pd
-import numpy as np
 import os
 from uuid import uuid4
 import datatable as dt
@@ -35,12 +34,12 @@ def elabora_giornata(orario:list, lista_articoli_possibili_macchina, macchina):
             for x in range(ordine["num_righe_prov"]):
                 index_articolo = randrange(0, len(lista_articoli_possibili_macchina))
                 # TODO Controllare funzionalità condizione
-                while index_articolo in tmp_lista_index_articoli and np.isnan(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]):
+                while index_articolo in tmp_lista_index_articoli and pd.isnull(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]):
                 #TODO ripristinare la condizione sotto
                 #or datetime.strptime(lista_articoli_possibili_macchina[index_articolo]["DTINILOG"], "%d/%m/%Y") > orario_corrente:
                     index_articolo = randrange(0, len(lista_articoli_possibili_macchina))
                 tmp_lista_index_articoli.append(index_articolo)
-                ordine["righe"].append({"NUMREG":ordine["NUMREG_PROV"],"PROGRIGA":x+1, "index articolo":index_articolo, "CODART":lista_articoli_possibili_macchina[index_articolo]["CODART"] if np.isnan(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]) else lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]})
+                ordine["righe"].append({"NUMREG":ordine["NUMREG_PROV"],"PROGRIGA":x+1, "index articolo":index_articolo, "CODART":lista_articoli_possibili_macchina[index_articolo]["CODART"] if pd.isnull(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]) else lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]})
                 tmp_articolo_selezionato = lista_articoli_possibili_macchina[index]
                 # Andamento produzione:
                 # TODO Aggiungere casi di modalità produzione in un secondo momento [sotto, normale, sovra]
@@ -273,9 +272,7 @@ with pro.Progress(pro.SpinnerColumn(style="bold rgb(1,185,255)"),
     refresh_per_second=60) as progressbar:
         task = progressbar.add_task("In esecuzione...",total=len(tmp_list_numreg))
         for x in range(0,len(tmp_list_numreg)): # LINK https://www.delftstack.com/howto/python/pad-string-with-zeros-in-python/
-            tmp_new_NUMREG = str(tmp_dates.year[x])
-            tmp_new_NUMREG = tmp_new_NUMREG.ljust(16-(len(str(x+1))+len(tmp_new_NUMREG)),"0")
-            tmp_new_NUMREG += str(x+1)
+            tmp_new_NUMREG = str(tmp_dates.year[x]) + "0" * (12-len(str(tmp_dates.year[x]))-len(str(x+1))) + str(x+1)
             df_righe.loc[df_righe["NUMREG"] == tmp_list_numreg["NUMREG"].values[x], "NUMREG"] = tmp_new_NUMREG
             progressbar.update(task, advance=1)
         progressbar.update(task, description="[green]Completato![/green]")
