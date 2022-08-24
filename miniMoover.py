@@ -89,6 +89,7 @@ def elabora_giornata(orario:list, lista_articoli_possibili_macchina, macchina):
                     riga["tempo impiegato"] = tempo_impiegato
                     riga["CODMACCHINA"] = macchina["CODMACCHINA"]
                     riga["CODREP"] = lista_articoli_possibili_macchina[index]["CODREP"]
+                    riga["CODFASE"] = macchina["CODFASE"]
                     
             lista_lavorazioni_giornata.append(ordine["righe"])
     return lista_lavorazioni_giornata
@@ -212,7 +213,7 @@ for index, riga in enumerate(lista_info_macchine):
     codmacchina = riga["CODMACCHINA"]
     if codmacchina not in lista_articoli_possibili_full:
         continuare = "g"
-        while(continuare != "S" and continuare != "N"):
+        while continuare not in ["S","N"]:
             continuare = input(f"[yellow]ATTENZIONE: Nessun articolo trovato per {codmacchina}.\nContinuare con le altre? [S/N] [/yellow]").upper()
         match continuare:
             case "S":
@@ -317,7 +318,7 @@ lista_righe["DATACONSOLIDAMENTO"] = lista_righe.pop("data consolidamento")
 lista_righe["QTAORDINE"] = lista_righe.pop("qta_ordine")
 lista_righe["STARTDATE"] = lista_righe.pop("inizio lavorazione")
 lista_righe["ENDDATE"] = lista_righe.pop("fine lavorazione")
-lista_righe["CODFASE"] = lista_righe["CODARTICOLO"]
+lista_righe["CODFASE"] = lista_righe["CODFASE"]
 
 # Ordinamento colonne
 lista_righe = OrderedDict((k, lista_righe[k]) for k in campi_insert)
