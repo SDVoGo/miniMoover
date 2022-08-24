@@ -9,7 +9,7 @@ import os
 from uuid import uuid4
 import datatable as dt
 from shelve import open
-from lib.utils import straordinari, distribuzione_normale, flat_to_dict, get_project_root as root, print_log
+from lib.utils import print_warning, straordinari, distribuzione_normale, flat_to_dict, get_project_root as root, print_log
 from pathlib import Path
 
 campi_insert = ["DITTA","DEPOSITO","CODMACCHINA","STAZIONE","NUMREG","PROGRIGA","CODARTICOLO","VARIANTE","STARTDATE","ENDDATE","QTAORDINE","TEMPO","TEMPOPEZZO","CONTAPEZZI","CODFASE","CODREPARTO","CODOPERATORE","STATOMACCHINA","DATACONSOLIDAMENTO"]
@@ -33,19 +33,25 @@ def elabora_giornata(orario:list, lista_articoli_possibili_macchina, macchina):
             tmp_lista_index_articoli = []
             for x in range(ordine["num_righe_prov"]):
                 index_articolo = randrange(0, len(lista_articoli_possibili_macchina))
-                # TODO Controllare funzionalità condizione
-                while index_articolo in tmp_lista_index_articoli and pd.isnull(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]):
-                #TODO ripristinare la condizione sotto
-                #or datetime.strptime(lista_articoli_possibili_macchina[index_articolo]["DTINILOG"], "%d/%m/%Y") > orario_corrente:
+                # Panic Protocol: Per non rischiare il loop infinito
+                tmp_panic_counter = 0
+                # Se l'articolo è già presente in una riga dell'ordine o non esisteva al momento della data da elaborare (=> il codartold non esiste)
+                while index_articolo in tmp_lista_index_articoli or (datetime.strptime(lista_articoli_possibili_macchina[index_articolo]["DTINILOG"], "%d/%m/%Y") > turno[0] and pd.isnull(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"])):
+                    tmp_panic_counter +=1
+                    if tmp_panic_counter == len(lista_articoli_possibili_macchina)*3:
+                        # PANIC CHECKER
+                        print_warning("Confermato loop infinito. Uscita forzata.")
+                        sys.exit()
+                        ##
                     index_articolo = randrange(0, len(lista_articoli_possibili_macchina))
                 tmp_lista_index_articoli.append(index_articolo)
-                ordine["righe"].append({"NUMREG":ordine["NUMREG_PROV"],"PROGRIGA":x+1, "index articolo":index_articolo, "CODART":lista_articoli_possibili_macchina[index_articolo]["CODART"] if pd.isnull(lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]) else lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]})
+                ordine["righe"].append({"NUMREG":ordine["NUMREG_PROV"],"PROGRIGA":x+1, "index articolo":index_articolo, "CODART":lista_articoli_possibili_macchina[index_articolo]["CODART"] if datetime.strptime(lista_articoli_possibili_macchina[index_articolo]["DTINILOG"], "%d/%m/%Y")<=turno[0] else lista_articoli_possibili_macchina[index_articolo]["CODARTOLD"]})
                 tmp_articolo_selezionato = lista_articoli_possibili_macchina[index]
                 # Andamento produzione:
                 # TODO Aggiungere casi di modalità produzione in un secondo momento [sotto, normale, sovra]
                 # NOTE Attenzione: per semplificare il programma la feature qta_ordine != contapezzi non è stata implementata
                 ordine["righe"][x]["qta_ordine"] = distribuzione_normale(tmp_articolo_selezionato["MEAN_QTALAV"],tmp_articolo_selezionato["DEVSTD_QTALAV"])[0]
-                ordine["righe"][x]["tempo_ciclo"] = distribuzione_normale(tmp_articolo_selezionato["MEAN_QTALAV"],tmp_articolo_selezionato["DEVSTD_QTALAV"], ordine["righe"][x]["qta_ordine"])
+                ordine["righe"][x]["tempo_ciclo"] = distribuzione_normale(tmp_articolo_selezionato["MEAN_TEMPOCICLO"],tmp_articolo_selezionato["DEVSTD_TEMPOCICLO"], ordine["righe"][x]["qta_ordine"])
             # Fase 2: Controllo fattibilità riga
             # Cicla Righe
             for riga in ordine["righe"]:
@@ -318,7 +324,19 @@ lista_righe = OrderedDict((k, lista_righe[k]) for k in campi_insert)
 a = dt.Frame(lista_righe)
 
 # Salvataggio
-a.to_csv(to_desktop("output.csv"))
+while True:
+    try:
+        a.to_csv(to_desktop("output.csv"))
+        break
+    except:
+        scelta = "T"
+        while scelta not in ["N","S"]:
+            print_warning("Impossibile scrivere su file 'output.csv' perché aperto su un altro processo. Chiudere il file e proseguire.")
+            scelta = input("Procedere?[S/N] ").upper()
+            if scelta not in ["N","S"]:
+                print("Scelta non valida. Riprovare.")
+        if scelta == "S" : continue
+        elif scelta == "N" : sys.exit("Chiusura programma su comando dell'utente.")
 print_log(f"[bright_green]Creato file 'output.csv' su Desktop.[/bright_green]")
 print_log(f"[bright_green]{tmp_num_righe} righe processate in {datetime.now()-script_start_time}.[/bright_green]")
 try:

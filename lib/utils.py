@@ -4,6 +4,9 @@ from random import choices, randrange
 import numpy as np
 from rich import print
 
+def print_warning(msg:str):
+    print(f"[bright_red]ATTENZIONE: [/bright_red]{msg}")
+
 def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
@@ -36,7 +39,7 @@ def distribuzione_normale(mean, sigma, num_valori_richiesti:int=1):
     res = []
     for item in s:
         while round(item) <= 0:
-            item = np.random.normal(mean, sigma,)
+            item = np.random.normal(mean, sigma)
         res.append(round(item))
     #if len(res) == 1: return res[0]
     return res
