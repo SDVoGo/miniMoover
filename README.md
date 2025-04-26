@@ -6,6 +6,8 @@ miniMoover è un software Python progettato per generare **dati simulati** per l
 
 L'obiettivo è fornire uno strumento utile per **analizzare la capacità di produzione** e **testare applicazioni aziendali** senza utilizzare dati reali o sensibili.
 
+⚠️ Il codice non presenta il file <code>requirements.txt</code> perché è stato scritto molte tempo fa e ad uso singolo.
+
 ---
 
 ## Table of Contents
