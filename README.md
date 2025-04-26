@@ -19,6 +19,7 @@ L'obiettivo è fornire uno strumento utile per **analizzare la capacità di prod
 ## HowTo
 
 1. **Preparazione dei file CSV**:
+    - Creare una cartella `data/` nella root del programma.
     - Posiziona tutti i file CSV nella cartella `data/`.
     - Il file CSV delle macchine deve essere chiamato **`lista_macchina.csv`** e deve seguire il formato:
 
@@ -36,13 +37,13 @@ L'obiettivo è fornire uno strumento utile per **analizzare la capacità di prod
 
     <br>
 
-2. **Esecuzione dello script**:
+3. **Esecuzione dello script**:
     - Dopo aver configurato i CSV, esegui lo script principale:
     ```bash
     python generatore_ordini.py
     ```
 
-3. **Output**:
+4. **Output**:
     - I dati generati saranno salvati nei formati configurati (es. CSV), contenenti **simulazioni di ordini** e informazioni sui tempi di produzione.
 
 ---
